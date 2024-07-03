@@ -15,7 +15,7 @@ const ProductListItem=({product}:ProductListItemProps)=>{
     <Pressable style={styles.container}>
 
     <Image
-     source={{uri:product.image||defaultPizzaImage}} 
+     source={{uri:product.image ?? defaultPizzaImage}} 
      style={styles.image}
      resizeMode='contain'
      />
