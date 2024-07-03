@@ -1,11 +1,13 @@
 import { StyleSheet, Text, View,Image,Pressable} from 'react-native'
 import {useState} from 'react'
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
+import { Stack, useLocalSearchParams, useRouter,Link} from 'expo-router'
 import products from '@assets/data/products'
 import { defaultPizzaImage } from '@/components/ProductListItem'
 import Button from '@/components/button'
 import { useCart } from '@/providers/CartProvider'
 import { PizzaSize } from '@/types'
+import { FontAwesome } from '@expo/vector-icons'
+import Colors from '@/constants/Colors'
 
 const router=useRouter();
 
@@ -25,7 +27,25 @@ const ProductDetailScreen = () => {
   }
   return (
     <View>
-      <Stack.Screen options={{title:product.name}}/>
+      
+      <Stack.Screen
+       options={{
+        headerRight: () => (
+          <Link href={`/(admin)/menu/create?id=${id}`} asChild>
+            <Pressable>
+              {({ pressed }) => (
+                <FontAwesome
+                  name="pencil"
+                  size={25}
+                  color={Colors.light.tint}
+                  style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                />
+              )}
+            </Pressable>
+          </Link>
+        ),
+      }}
+    />
       <Image source={{uri:product.image || defaultPizzaImage}}
                       style={styles.image}/>
              
