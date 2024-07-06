@@ -1,96 +1,104 @@
-import { StyleSheet, Text, View,Image,Pressable} from 'react-native'
-import {useState} from 'react'
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
-import products from '@assets/data/products'
-import { defaultPizzaImage } from '@/components/ProductListItem'
-import Button from '@/components/button'
-import { useCart } from '@/providers/CartProvider'
-import { PizzaSize } from '@/types'
+import { StyleSheet, Text, View, Image, Pressable, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 
-const router=useRouter();
+import { defaultPizzaImage } from '@/components/ProductListItem';
+import Button from '@/components/button';
+import { useCart } from '@/providers/CartProvider';
+import { PizzaSize } from '@/types';
+import { useProduct } from '@/api/products';
 
-const sizes:PizzaSize[]=['S','M','L','XL']
+const router = useRouter();
+
+const sizes: PizzaSize[] = ['S', 'M', 'L', 'XL'];
 
 const ProductDetailScreen = () => {
-  const[selectedSize,setSelectedSize]=useState<PizzaSize>("M");
-  const {id}=useLocalSearchParams();
-  const {addItem}=useCart();
-    const product=products.find((p)=>p.id.toString()==id)
+  const [selectedSize, setSelectedSize] = useState<PizzaSize>('M');
+  const { id: idString } = useLocalSearchParams();
+  const { addItem } = useCart();
 
-const addTocart=()=>{
-  if(!product)
-    {
-      return
+  const id = parseFloat(typeof idString === 'string' ? idString : idString?.[0] ?? '') ;
+  const { data: product, error, isLoading } = useProduct(id);
 
-    }
-  addItem(product,selectedSize);
-  router.push('/cart')
-
-}
-
-
-  if (!product){
-    return <Text>not found</Text>
+  if (isLoading) {
+    return <ActivityIndicator />;
   }
+
+  if (error) {
+    return <Text>Failed to fetch data</Text>;
+  }
+
+  const addToCart = () => {
+    if (!product) {
+      return;
+    }
+    addItem(product, selectedSize);
+    router.push('/cart');
+  };
+
+  if (!product) {
+    return <Text>Product not found</Text>;
+  }
+
   return (
-    <View>
-      <Stack.Screen options={{title:product.name}}/>
-      <Image source={{uri:product.image || defaultPizzaImage}}
-                      style={styles.image}/>
-                        <Text>Select size</Text>
-
-<View style={styles.sizes}>   
-{sizes.map((size)=>(
-  <Pressable key={size}
-   style={[styles.size,{backgroundColor:selectedSize==size?"gainsboro":"white"}]}
-   onPress={()=>{setSelectedSize(size)}}
-   >
-  
-  <Text style={styles.Sizetext} key={size}>{size}</Text>
-  </Pressable>  
-))}
-</View>  
+    <View style={styles.container}>
+      <Stack.Screen options={{ title: product.name }} />
+      <Image source={{ uri: product.image || defaultPizzaImage }} style={styles.image} />
+      <Text>Select size</Text>
+      <View style={styles.sizes}>
+        {sizes.map((size) => (
+          <Pressable
+            key={size}
+            style={[
+              styles.size,
+              { backgroundColor: selectedSize === size ? 'gainsboro' : 'white' },
+            ]}
+            onPress={() => {
+              setSelectedSize(size);
+            }}
+          >
+            <Text style={styles.sizeText}>{size}</Text>
+          </Pressable>
+        ))}
+      </View>
       <Text style={styles.price}>{product.price}</Text>
-      <Button text="Add to cart " onPress={addTocart}/>
+      <Button text="Add to cart" onPress={addToCart} />
     </View>
-  )
-}
+  );
+};
 
-export default ProductDetailScreen
+export default ProductDetailScreen;
 
 const styles = StyleSheet.create({
-  container:{
-    backgroundColor:"white",
-    flex:1,
-    padding:10
-
+  container: {
+    backgroundColor: 'white',
+    flex: 1,
+    padding: 10,
   },
-  image:{
-    width:"100%",
-    aspectRatio:1,
+  image: {
+    width: '100%',
+    aspectRatio: 1,
   },
-  price:{
-    fontSize:18,
-    fontWeight:"bold",
-    marginTop:"auto"
+  price: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 'auto',
   },
-  sizes:{
-    flexDirection:'row',
-    justifyContent:'space-around',
-
-
+  sizes: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 10,
   },
-  size:{
-    backgroundColor:'gainsboro',
-    width:50,
-    aspectRatio:1,
-    borderRadius:25,
-    alignItems:"center",
-    justifyContent:"center"
-
+  size: {
+    backgroundColor: 'gainsboro',
+    width: 50,
+    aspectRatio: 1,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  Sizetext:{
-    fontSize:20,
-    fontWeight:'500',
-  }
-})
+  sizeText: {
+    fontSize: 20,
+    fontWeight: '500',
+  },
+});

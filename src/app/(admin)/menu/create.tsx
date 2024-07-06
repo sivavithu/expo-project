@@ -1,18 +1,41 @@
 import { View, Text, StyleSheet, TextInput, Image } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '@/components/button';
 import { defaultPizzaImage } from '@/components/ProductListItem';
 import Colors from '@/constants/Colors';
 import * as ImagePicker from 'expo-image-picker';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert } from 'react-native';
+import { useDeleteProduct, useInsertProduct, useProduct, useUpdateProduct } from '@/api/products';
+
+
 const CreateProductScreen = () => {
   const [image, setImage] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+
   const [errors, setErrors] = useState('');
-  const {id}=useLocalSearchParams();
+
+  const {id:idString}=useLocalSearchParams();
+  const id = parseFloat(typeof idString === 'string' ? idString : idString?.[0]??'');
   const isUpdate=!!id
+  const router=useRouter();
+
+  const {mutate:insertProduct}=useInsertProduct();
+  const {mutate:deleteProduct}=useDeleteProduct();
+ 
+  const {mutate:updateProduct}=useUpdateProduct();
+  const {data:updatingProduct}=useProduct(id);
+
+
+  useEffect(()=>{
+    if(updatingProduct){
+      setPrice(updatingProduct.price.toString());
+      setPrice(updatingProduct.name)
+      setPrice(updatingProduct.image)
+      
+    }
+  },[updatingProduct])
 
   const pickImage = async () => {
     
@@ -60,26 +83,57 @@ const onSubmit=()=>{
     onCreate();
   }
 }
-
 const onUpdate = () => {
   if (!validateInput()) {
     return;
   }
+
   console.warn('Product updated successfully');
-  resetField();
+
+  updateProduct(
+    {
+      id,                      // Pass the product ID
+      name,
+      price: parseFloat(price), // Convert price to a float
+      image
+    },
+    {
+      onSuccess: () => {
+        resetField();
+        router.back();
+      },
+      onError: (error) => {
+        Alert.alert('Error', `Failed to update product: ${error.message}`);
+      },
+    }
+  );
 };
+const onDelete=()=>{
+  deleteProduct(id,{
+    onSuccess: () => {
+      resetField();
+      router.replace('/(admin)');
+    },
+  })
+
+}
 
   const onCreate = () => {
     if (!validateInput()) {
       return;
     }
-    console.warn('Product created successfully');
-    resetField();
+   
+    insertProduct({name,price:parseFloat(price),image},{
+      onSuccess:()=>{
+        resetField();
+        router.back()
+      },
+    })
+
+
   };
 
-  const onDelete=()=>{
-   console.warn('DELETE')
-  }
+
 
   const confirmDelete = () => {
     Alert.alert('Confirm', 'Are you sure you want to delete this product', [
