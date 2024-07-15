@@ -31,8 +31,8 @@ const CreateProductScreen = () => {
   useEffect(()=>{
     if(updatingProduct){
       setPrice(updatingProduct.price.toString());
-      setPrice(updatingProduct.name)
-      setPrice(updatingProduct.image)
+      setName(updatingProduct.name)
+      setImage(updatingProduct.image || defaultPizzaImage)
       
     }
   },[updatingProduct])
@@ -114,6 +114,9 @@ const onDelete=()=>{
       resetField();
       router.replace('/(admin)');
     },
+    onError:()=>{
+      Alert.alert(errors)
+    }
   })
 
 }

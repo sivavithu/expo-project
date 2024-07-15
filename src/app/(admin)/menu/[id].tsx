@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { defaultPizzaImage } from '@/components/ProductListItem';
 import { useState } from 'react';
-import Button from '@/components/button';
+
 import { useCart } from '@/providers/CartProvider';
 import { PizzaSize } from '@/types';
 import { FontAwesome } from '@expo/vector-icons';
@@ -67,12 +67,12 @@ const ProductDetailsScreen = () => {
         ),
       }}
     />
-      <Image source={{uri:product.image || defaultPizzaImage}}
+      <Image source={{uri:product?.image || defaultPizzaImage}}
                       style={styles.image}/>
              
 
-      <Text style={styles.title}>{product.name}</Text>
-      <Text style={styles.price}>{product.price}</Text>
+      <Text style={styles.title}>{product?.name}</Text>
+      <Text style={styles.price}>{product?.price}</Text>
       
     </View>
   )
